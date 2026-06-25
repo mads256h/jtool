@@ -72,12 +72,8 @@ namespace JTool.Tools
                 .StartAsync("Setting Original Estimate to 0h", async ctx =>
                 {
                     ctx.Status("Setting Original Estimate to 0h");
-                    Task[] tasks = [
-                        issue.SetOriginalEstimateAsync("0h"),
-                        issue.SetTimeRemainingAsync("0h"),
-                    ];
-
-                    await Task.WhenAll(tasks);
+                    await issue.SetOriginalEstimateAsync("0h");
+                    await issue.SetTimeRemainingAsync("0h");
                 });
         }
 
@@ -114,19 +110,14 @@ namespace JTool.Tools
                         task.Description = $"Modifying subtask '{extractedSubtask.Name}'";
                         subtask.Summary = extractedSubtask.Name;
 
-                        List<Task> tasks =
-                        [
-                            subtask.SaveChangesAsync(),
-                            subtask.SetOriginalEstimateAsync($"{extractedSubtask.Hours}h"),
-                            subtask.AssignAsync(issue.AssigneeUser.AccountId),
-                        ];
+                        await subtask.SaveChangesAsync();
+                        await subtask.SetOriginalEstimateAsync($"{extractedSubtask.Hours}h");
+                        await subtask.AssignAsync(issue.AssigneeUser.AccountId);
 
                         if (subtask.Status.Name.Equals(subtaskWorkflow.FromStatus, StringComparison.OrdinalIgnoreCase))
                         {
-                            tasks.Add(subtask.WorkflowTransitionAsync(subtaskWorkflow.TransitionName));
+                            await subtask.WorkflowTransitionAsync(subtaskWorkflow.TransitionName);
                         }
-
-                        await Task.WhenAll(tasks);
 
                         task.Increment(1);
                     }
